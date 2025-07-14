@@ -10,12 +10,6 @@ A modern, full-stack **Todo List application** built with **Next.js**, **Tailwin
 
 ---
 
-### 📸 Screenshots
-
-![alt UI](image.png)
-
----
-
 ### ✨ Features
 
 - ✅ Add new todos with input sanitization
@@ -108,7 +102,3 @@ todo-list/
 ### 📄 License
 
 This project is open-source and available under the [MIT License](LICENSE).
-
----
-
-Let me know if you also want a matching backend `README.md` or a deploy guide (Vercel, Netlify, etc).
