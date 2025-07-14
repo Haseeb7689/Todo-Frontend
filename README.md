@@ -82,16 +82,6 @@ todo-list/
 
 ---
 
-### 🛠 Future Improvements
-
-- [ ] Add authentication (e.g., NextAuth)
-- [ ] Drag and drop support
-- [ ] Priority-based tasks
-- [ ] Local storage fallback
-- [ ] Unit and integration tests (Jest/Testing Library)
-
----
-
 ### 👨‍💻 Author
 
 - **Haseeb ur Rehman**
