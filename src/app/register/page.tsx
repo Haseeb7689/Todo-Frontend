@@ -11,10 +11,10 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 const registerSchema = z
   .object({
     email: z.string().email("Invalid email"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    Password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.Password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
@@ -40,7 +40,7 @@ function Register() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: data.email, Password: data.password }),
+        body: JSON.stringify({ email: data.email, Password: data.Password }),
       }
     ).then(async (res) => {
       const data = await res.json();
@@ -79,6 +79,7 @@ function Register() {
             <div>
               <label
                 htmlFor="email"
+                id="email-label"
                 className="block text-sm/6 font-medium text-gray-900 dark:text-white"
               >
                 Email address
@@ -104,6 +105,7 @@ function Register() {
               <div className="flex items-center justify-between">
                 <label
                   htmlFor="password"
+                  id="password-label"
                   className="block text-sm/6 font-medium text-gray-900 dark:text-white"
                 >
                   Password
@@ -111,16 +113,16 @@ function Register() {
               </div>
               <div className="mt-2">
                 <input
-                  {...register("password")}
-                  id="password"
-                  name="password"
+                  {...register("Password")}
+                  id="Password"
+                  name="Password"
                   type="password"
                   autoComplete="current-password"
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-green-600 sm:text-sm/6"
                 />
-                {errors.password && (
+                {errors.Password && (
                   <p className="text-sm text-red-600 mt-1">
-                    {errors.password.message}
+                    {errors.Password.message}
                   </p>
                 )}
               </div>
@@ -129,7 +131,8 @@ function Register() {
             <div>
               <div className="flex items-center justify-between">
                 <label
-                  htmlFor="confirm password"
+                  htmlFor="confirmpassword"
+                  id="confirm-password-label"
                   className="block text-sm/6 font-medium text-gray-900 dark:text-white"
                 >
                   Confirm Password
