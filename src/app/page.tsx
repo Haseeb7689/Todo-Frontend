@@ -89,6 +89,10 @@ export default function Home() {
           body: JSON.stringify({ completed: !completed }),
         }
       );
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to add todo");
+      }
       fetchTodos(token);
     };
     toast.promise(addPromise(), {
