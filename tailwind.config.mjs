@@ -1,6 +1,7 @@
 export default {
   darkMode: "class",
-  content: ["./src/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  content: ["./app/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
+
   theme: {
     extend: {
       fontFamily: {
@@ -8,5 +9,12 @@ export default {
       },
     },
   },
+
+  variants: {
+    extend: {
+      cursor: ["disabled"],
+    },
+  },
+
   plugins: [require("tailwindcss-animate")],
 };
