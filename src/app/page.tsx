@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import Loader from "@/components/ui/Loader";
 import Logout from "@/components/ui/Logout";
 import { toast } from "sonner";
+import { ModeToggle } from "@/components/ui/mode-toggle";
 
 type Todos = {
   id: number;
@@ -168,28 +169,33 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 bg-gray-100">
+    <main className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 ">
+      <div className="absolute top-5 left-0 ml-5">
+        <ModeToggle />
+      </div>
+
       <div className="flex items-center justify-between mb-6 w-full max-w-xl relative">
         <div className="mx-auto">
-          <h1 className=" text-3xl md:text-4xl font-bold text-gray-800 text-center">
+          <h1 className=" text-3xl md:text-4xl font-bold text-gray-800 text-center dark:text-white">
             Todo App
           </h1>
         </div>
-
-        <Logout onClick={handleLogout} />
+        <div className="absolute right-0 ">
+          <Logout onClick={handleLogout} />
+        </div>
       </div>
 
       <div className="flex w-full max-w-xl">
         <Input
           placeholder="Add todo"
           value={todo}
-          className="w-full text-lg bg-amber-400"
+          className="w-full text-lg bg-amber-400 dark:bg-amber-400"
           onChange={(e) => setTodo(e.target.value)}
         />
         <Button
           onClick={addTodo}
           disabled={!todo.trim()}
-          className="ml-2 bg-green-500 hover:bg-green-400 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+          className="ml-2 bg-green-500 hover:bg-green-400 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:text-white"
         >
           +
         </Button>

@@ -61,7 +61,9 @@ function Register() {
   };
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <ModeToggle />
+      <div className="absolute top-5 left-0 ml-5">
+        <ModeToggle />
+      </div>
       <div className="sm:mx-auto mt-4 sm:w-full sm:max-w-sm border border-gray-300 shadow-lg bg-white dark:bg-gray-800 p-8 rounded-lg">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">
