@@ -22,6 +22,7 @@ export default function Home() {
   const router = useRouter();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [token, setToken] = useState<string | null>(null);
+  const [isDisabled, setIsDisabled] = useState(true);
 
   const fetchTodos = async (authToken: string) => {
     const res = await fetch(
@@ -32,8 +33,8 @@ export default function Home() {
         },
       }
     );
-    const data = await res.json();
-    setTodos(data);
+    const apiRes = await res.json();
+    setTodos(apiRes.data);
   };
 
   const addTodo = async () => {
@@ -55,7 +56,7 @@ export default function Home() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ title: sanitizedTodo, completed: false }),
+          body: JSON.stringify({ title: sanitizedTodo }),
         }
       );
       if (!res.ok) {
@@ -120,7 +121,7 @@ export default function Home() {
       );
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to delete todo");
+        throw new Error(errorData.message || "Failed to add todo");
       }
     };
     fetchTodos(token);
@@ -150,19 +151,45 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       const storedToken = localStorage.getItem("token");
       if (!storedToken) {
         router.push("/register");
       } else {
-        setIsCheckingAuth(false);
-        setToken(storedToken);
-        fetchTodos(storedToken);
+        try {
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos`,
+            {
+              headers: {
+                Authorization: `Bearer ${storedToken}`,
+              },
+            }
+          );
+
+          if (!res.ok) {
+            localStorage.removeItem("token");
+            toast.error("Session expired. Please log in again.");
+            router.push("/register");
+            return;
+          }
+
+          setIsCheckingAuth(false);
+          setToken(storedToken);
+          fetchTodos(storedToken);
+        } catch (error) {
+          console.error("Error verifying token:", error);
+          localStorage.removeItem("token");
+          router.push("/register");
+        }
       }
     }, 3000);
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    setIsDisabled(!todo.trim());
+  }, [todo]);
 
   if (isCheckingAuth) {
     return (
@@ -198,8 +225,8 @@ export default function Home() {
         />
         <Button
           onClick={addTodo}
-          disabled={!todo.trim()}
-          className="ml-2 bg-green-500 hover:bg-green-400 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:text-white"
+          disabled={isDisabled}
+          className="ml-2 w-10 rounded-md hover:cursor-pointer bg-green-500 hover:bg-green-400 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed dark:text-white"
         >
           +
         </Button>
@@ -223,11 +250,11 @@ export default function Home() {
               <Checkbox
                 checked={t.completed}
                 onCheckedChange={() => toggleTodo(t.id, t.completed)}
-                className="w-5 h-5 border-gray-400 text-green-600"
+                className="hover:cursor-pointer w-5 h-5 border-gray-400 text-green-600"
               />
               <Button
                 onClick={() => deleteTodo(t.id)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm"
+                className="hover:cursor-pointer rounded-md bg-red-500 hover:bg-red-600 text-white px-3 py-1 text-sm"
               >
                 Delete
               </Button>

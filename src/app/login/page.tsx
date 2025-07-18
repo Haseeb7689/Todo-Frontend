@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ type RegisterFormData = z.infer<typeof LogiSchema>;
 function Login() {
   const router = useRouter();
   const {
+    watch,
     register,
     handleSubmit,
     formState: { errors },
@@ -25,6 +26,9 @@ function Login() {
     resolver: zodResolver(LogiSchema),
     mode: "onChange",
   });
+  const [isDisabled, setIsDisabled] = useState(true);
+  const watchEmail = watch("email");
+  const watchPassword = watch("Password");
 
   const handleLogin = async (data: RegisterFormData) => {
     const loginPromise = fetch(
@@ -37,12 +41,12 @@ function Login() {
         body: JSON.stringify({ email: data.email, Password: data.Password }),
       }
     ).then(async (res) => {
-      const data = await res.json();
-      if (data.token) {
-        localStorage.setItem("token", data.token);
+      const apiRes = await res.json();
+      if (apiRes.data.token) {
+        localStorage.setItem("token", apiRes.data.token);
         router.push("/");
       } else {
-        throw new Error(data.message || "Invalid login");
+        throw new Error(apiRes.message || "Invalid login");
       }
     });
 
@@ -52,6 +56,13 @@ function Login() {
       error: (err) => err.message,
     });
   };
+  useEffect(() => {
+    if (watchEmail && watchPassword) {
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(true);
+    }
+  }, [watchEmail, watchPassword]);
 
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -80,6 +91,7 @@ function Login() {
               >
                 Email address
               </label>
+
               <div className="mt-2">
                 <input
                   {...register("email")}
@@ -90,7 +102,7 @@ function Login() {
                   className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-green-600 sm:text-sm/6"
                 />
                 {errors.email && (
-                  <p className="text-sm text-red-600 mt-1 animate-caret-blink">
+                  <p className="text-sm text-red-600 mt-1 ">
                     {errors.email.message}
                   </p>
                 )}
@@ -106,6 +118,14 @@ function Login() {
                 >
                   Password
                 </label>
+                <Link
+                  href="/forgot-password"
+                  className="font-semibold text-sm/6 text-gray-500 "
+                >
+                  <button className="cursor-pointer hover:underline hover:text-gray-400">
+                    Forgot your password?
+                  </button>
+                </Link>
               </div>
               <div className="mt-2">
                 <input
@@ -127,7 +147,8 @@ function Login() {
             <div>
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md bg-green-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-green-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                disabled={isDisabled}
+                className="flex w-full hover:cursor-pointer justify-center rounded-md disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed bg-green-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-green-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Sign in
               </button>

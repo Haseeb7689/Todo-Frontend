@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 function Register() {
   const router = useRouter();
   const {
+    watch,
     register,
     handleSubmit,
     formState: { errors },
@@ -31,6 +32,11 @@ function Register() {
     resolver: zodResolver(registerSchema),
     mode: "onChange",
   });
+  const [isDisabled, setIsDisabled] = useState(true);
+
+  const watchEmail = watch("email");
+  const watchPassword = watch("Password");
+  const watchConfirmPassword = watch("confirmPassword");
 
   const handleRegister = async (data: RegisterFormData) => {
     const registerPromise = fetch(
@@ -43,13 +49,13 @@ function Register() {
         body: JSON.stringify({ email: data.email, Password: data.Password }),
       }
     ).then(async (res) => {
-      const data = await res.json();
+      const apiRes = await res.json();
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        router.push("/");
+      if (apiRes.data.token) {
+        localStorage.setItem("token", apiRes.data.token);
+        router.push("/login");
       } else {
-        throw new Error(data.message || "Registration failed");
+        throw new Error(apiRes.message || "Registration failed");
       }
     });
 
@@ -59,6 +65,16 @@ function Register() {
       error: (err) => err.message,
     });
   };
+
+  useEffect(() => {
+    const isFormInvalid =
+      !watchEmail?.trim() ||
+      !watchPassword?.trim() ||
+      !watchConfirmPassword?.trim() ||
+      watchPassword !== watchConfirmPassword;
+
+    setIsDisabled(isFormInvalid);
+  }, [watchEmail, watchPassword, watchConfirmPassword]);
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="absolute top-5 left-0 ml-5">
@@ -106,7 +122,7 @@ function Register() {
             <div>
               <div className="flex items-center justify-between">
                 <label
-                  htmlFor="password"
+                  htmlFor="Password"
                   id="password-label"
                   className="block text-sm/6 font-medium text-gray-900 dark:text-white"
                 >
@@ -133,7 +149,7 @@ function Register() {
             <div>
               <div className="flex items-center justify-between">
                 <label
-                  htmlFor="confirmpassword"
+                  htmlFor="confirmPassword"
                   id="confirm-password-label"
                   className="block text-sm/6 font-medium text-gray-900 dark:text-white"
                 >
@@ -160,7 +176,8 @@ function Register() {
             <div>
               <button
                 type="submit"
-                className="flex w-full justify-center rounded-md bg-green-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-green-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                disabled={isDisabled}
+                className="flex w-full hover:cursor-pointer justify-center rounded-md disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed bg-green-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-green-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
                 Sign up
               </button>
