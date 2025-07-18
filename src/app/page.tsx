@@ -120,7 +120,7 @@ export default function Home() {
       );
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to add todo");
+        throw new Error(errorData.message || "Failed to delete todo");
       }
     };
     fetchTodos(token);
