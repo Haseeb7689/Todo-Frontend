@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -29,32 +29,38 @@ function Login() {
   const [isDisabled, setIsDisabled] = useState(true);
   const watchEmail = watch("email");
   const watchPassword = watch("Password");
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogin = async (data: RegisterFormData) => {
-    const loginPromise = fetch(
-      `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/auth/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: data.email, Password: data.Password }),
-      }
-    ).then(async (res) => {
-      const apiRes = await res.json();
-      if (apiRes.data.token) {
-        localStorage.setItem("token", apiRes.data.token);
-        router.push("/");
-      } else {
-        throw new Error(apiRes.message || "Invalid login");
-      }
-    });
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(async () => {
+      const loginPromise = fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: data.email, Password: data.Password }),
+        }
+      ).then(async (res) => {
+        const apiRes = await res.json();
+        if (apiRes.data.token) {
+          localStorage.setItem("token", apiRes.data.token);
+          router.push("/");
+        } else {
+          throw new Error(apiRes.message || "Invalid login");
+        }
+      });
 
-    toast.promise(loginPromise, {
-      loading: "Logging in...",
-      success: "Login successful!",
-      error: (err) => err.message,
-    });
+      toast.promise(loginPromise, {
+        loading: "Logging in...",
+        success: "Login successful!",
+        error: "Invalid email or password",
+      });
+    }, 1000);
   };
   useEffect(() => {
     if (watchEmail && watchPassword) {
@@ -118,13 +124,12 @@ function Login() {
                 >
                   Password
                 </label>
+
                 <Link
                   href="/forgot-password"
-                  className="font-semibold text-sm/6 text-gray-500 "
+                  className="font-semibold cursor-pointer hover:underline text-sm/6 text-gray-500 hover:underline hover:text-gray-400"
                 >
-                  <button className="cursor-pointer hover:underline hover:text-gray-400">
-                    Forgot your password?
-                  </button>
+                  Forgot your password?
                 </Link>
               </div>
               <div className="mt-2">

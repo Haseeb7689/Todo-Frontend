@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +23,7 @@ export default function Home() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [isDisabled, setIsDisabled] = useState(true);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const fetchTodos = async (authToken: string) => {
     const res = await fetch(
@@ -34,120 +35,142 @@ export default function Home() {
       }
     );
     const apiRes = await res.json();
+    toast.info(apiRes.message);
     setTodos(apiRes.data);
   };
 
   const addTodo = async () => {
-    if (!token) {
-      alert("You must be logged in to add a todo.");
-      return;
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
     }
-    if (!todo.trim()) {
-      toast.error("Please enter a valid todo.");
-      return;
-    }
-    const sanitizedTodo = todo.replace(/<[^>]*>?/gm, "");
-    const addPromise = async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ title: sanitizedTodo }),
-        }
-      );
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to add todo");
+    debounceTimeout.current = setTimeout(async () => {
+      if (!token) {
+        toast.error("You must be logged in to add a todo.");
+        return;
       }
-      setTodo("");
-      fetchTodos(token);
-    };
-    toast.promise(addPromise(), {
-      loading: "Adding your todo...",
-      success: "Todo added successfully!",
-      error: (err) => err.message || "Something went wrong",
-    });
+      if (!todo.trim()) {
+        toast.error("Please enter a valid todo.");
+        return;
+      }
+      const sanitizedTodo = todo.replace(/<[^>]*>?/gm, "");
+      const addPromise = async () => {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ title: sanitizedTodo }),
+          }
+        );
+        if (!res.ok) {
+          const errorData = await res.json();
+
+          throw new Error(errorData.message || "Failed to add todo");
+        }
+        setTodo("");
+        fetchTodos(token);
+      };
+      toast.promise(addPromise(), {
+        loading: "Adding your todo...",
+        success: "Todo added successfully!",
+        error: (err) => err.message || "Something went wrong",
+      });
+    }, 1000);
   };
 
   const toggleTodo = async (id: number, completed: boolean) => {
-    if (!token) {
-      toast.error("You must be logged in to toggle a todo.");
-      return;
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
     }
-    const addPromise = async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ completed: !completed }),
-        }
-      );
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to add todo");
+    debounceTimeout.current = setTimeout(async () => {
+      if (!token) {
+        toast.error("You must be logged in to toggle a todo.");
+        return;
       }
-      fetchTodos(token);
-    };
-    toast.promise(addPromise(), {
-      loading: "Updating your todo...",
-      success: "Todo updated successfully!",
-      error: (err) => err.message || "Something went wrong",
-    });
+      const addPromise = async () => {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos/${id}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ completed: !completed }),
+          }
+        );
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Failed to add todo");
+        }
+        fetchTodos(token);
+      };
+      toast.promise(addPromise(), {
+        loading: "Updating your todo...",
+        success: "Todo updated successfully!",
+        error: (err) => err.message || "Something went wrong",
+      });
+    }, 1000);
   };
 
   const deleteTodo = async (id: number) => {
-    if (!token) {
-      toast.error("You must be logged in to delete a todo.");
-      return;
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
     }
-    const deletePromise = async () => {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to add todo");
+    debounceTimeout.current = setTimeout(async () => {
+      if (!token) {
+        toast.error("You must be logged in to delete a todo.");
+        return;
       }
-    };
-    fetchTodos(token);
-    toast.promise(deletePromise(), {
-      loading: "Deleting your todo...",
-      success: "Todo deleted successfully!",
-      error: (err) => err.message || "Something went wrong",
-    });
+      const deletePromise = async () => {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Failed to add todo");
+        }
+        fetchTodos(token);
+      };
+
+      toast.promise(deletePromise(), {
+        loading: "Deleting your todo...",
+        success: "Todo deleted successfully!",
+        error: (err) => err.message || "Something went wrong",
+      });
+    }, 1000);
   };
 
   const handleLogout = () => {
-    const logoutPromise = async () => {
-      return new Promise<void>((resolve) => {
-        setTimeout(() => {
-          localStorage.removeItem("token");
-          router.push("/login");
-          resolve();
-        }, 3000);
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(async () => {
+      const logoutPromise = async () => {
+        return new Promise<void>((resolve) => {
+          setTimeout(() => {
+            localStorage.removeItem("token");
+            router.push("/login");
+            resolve();
+          }, 3000);
+        });
+      };
+      toast.promise(logoutPromise(), {
+        loading: "Logging out...",
+        success: "Logout successful!",
+        error: (err) => err.message || "Something went wrong",
       });
-    };
-
-    toast.promise(logoutPromise(), {
-      loading: "Logging out...",
-      success: "Logout successful!",
-      error: (err) => err.message || "Something went wrong",
-    });
+    }, 1000);
   };
 
   useEffect(() => {
@@ -222,6 +245,11 @@ export default function Home() {
           value={todo}
           className="w-full text-lg bg-amber-400 dark:bg-amber-400"
           onChange={(e) => setTodo(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              addTodo();
+            }
+          }}
         />
         <Button
           onClick={addTodo}

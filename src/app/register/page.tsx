@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -37,33 +37,39 @@ function Register() {
   const watchEmail = watch("email");
   const watchPassword = watch("Password");
   const watchConfirmPassword = watch("confirmPassword");
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleRegister = async (data: RegisterFormData) => {
-    const registerPromise = fetch(
-      `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/auth/register`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: data.email, Password: data.Password }),
-      }
-    ).then(async (res) => {
-      const apiRes = await res.json();
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    debounceTimeout.current = setTimeout(async () => {
+      const registerPromise = fetch(
+        `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email: data.email, Password: data.Password }),
+        }
+      ).then(async (res) => {
+        const apiRes = await res.json();
 
-      if (apiRes.data.token) {
-        localStorage.setItem("token", apiRes.data.token);
-        router.push("/login");
-      } else {
-        throw new Error(apiRes.message || "Registration failed");
-      }
-    });
+        if (apiRes.data.token) {
+          localStorage.setItem("token", apiRes.data.token);
+          router.push("/login");
+        } else {
+          throw new Error(apiRes.message || "Registration failed");
+        }
+      });
 
-    toast.promise(registerPromise, {
-      loading: "Registering...",
-      success: "Registration successful!",
-      error: (err) => err.message,
-    });
+      toast.promise(registerPromise, {
+        loading: "Registering...",
+        success: "Registration successful!",
+        error: "Error during registration",
+      });
+    }, 2000);
   };
 
   useEffect(() => {
