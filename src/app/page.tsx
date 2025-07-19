@@ -30,6 +30,7 @@ export default function Home() {
   const [editedTitle, setEditedTitle] = useState("");
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // Fetch todos from the API
   const fetchTodos = async (authToken: string) => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL_RESPONSE}/api/todos`,
@@ -43,6 +44,7 @@ export default function Home() {
     setTodos(apiRes.data);
   };
 
+  // Add a new todo
   const addTodo = async () => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
@@ -87,6 +89,7 @@ export default function Home() {
     }, 1000);
   };
 
+  // Toggle todo completion status
   const toggleTodo = async (id: number, completed: boolean) => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
@@ -123,6 +126,7 @@ export default function Home() {
     }, 1000);
   };
 
+  // Delete a todo
   const deleteTodo = async (id: number) => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
@@ -159,6 +163,7 @@ export default function Home() {
     }, 1000);
   };
 
+  // Delete all todos
   const deleteAllTodos = async () => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
@@ -201,11 +206,13 @@ export default function Home() {
     }, 1000);
   };
 
+  // Start editing a todo
   const startEditing = (todo: Todos) => {
     setEditingTodo(todo);
     setEditedTitle(todo.title);
   };
 
+  // Save edited todo
   const saveTodo = async (id: number) => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
