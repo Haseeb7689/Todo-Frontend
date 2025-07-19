@@ -35,7 +35,6 @@ export default function Home() {
       }
     );
     const apiRes = await res.json();
-    toast.info(apiRes.message);
     setTodos(apiRes.data);
   };
 
